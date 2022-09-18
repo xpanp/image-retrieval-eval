@@ -5,19 +5,19 @@ import dataset
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dataset', type=str, default='holidays',
-        help='ukbench/holidays/oxford5k/paris6k')
+    parser.add_argument('--dataset', type=str, default='pattern',
+        help='ukbench/holidays/oxford5k/paris6k/pattern')
 
-    parser.add_argument('--datadir', type=str, default='C:\\Users\\phs\\Desktop\\pytest\\dataset\\ukbench-100',
+    parser.add_argument('--datadir', type=str, default='image-pattern',
         help='dataset dir')
 
-    parser.add_argument('--datapth', type=str, default='holidays.pth',
+    parser.add_argument('--datapth', type=str, default='pattern.pth',
         help='dataset feature pth')
 
-    parser.add_argument('--method', type=str, default='vit',
+    parser.add_argument('--method', type=str, default='mae',
         help='vit/mae/swin/vgg/resnet')
 
-    parser.add_argument('--model', type=str, default='vit_base_patch16_224',
+    parser.add_argument('--model', type=str, default='mae_vit_base_patch16',
         help='model name, such as mae_vit_base_patch16/vit_base_patch16_224')
 
     parser.add_argument('--ckp', type=str, default='mae_finetuned_vit_base.pth',

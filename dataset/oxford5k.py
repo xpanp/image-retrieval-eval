@@ -16,6 +16,24 @@ def load_list(filename):
     lists = [x.strip() for x in l]
     return lists
 
+def get_query(query_list, dir):
+    querys = []
+    q_v = {}
+    for i in range(len(query_list)):
+        for j in range(1, 6):
+            queryfile = os.path.join(dir, query_list[i] + '_' + str(j) + '_query.txt')
+            goodfile = os.path.join(dir, query_list[i] + '_' + str(j) + '_good.txt')
+            okfile = os.path.join(dir, query_list[i] + '_' + str(j) + '_ok.txt')
+            junkfile = os.path.join(dir, query_list[i] + '_' + str(j) + '_junk.txt')
+            query = load_query(queryfile)
+            good = load_list(goodfile)
+            ok = load_list(okfile)
+            junk = load_list(junkfile)
+            good.extend(ok) # good和ok都认为是好的查询
+            querys.append(query)
+            q_v[query] = [tuple(good), tuple(junk)] 
+    return tuple(querys), q_v
+
 # 计算单个查询的ap值
 def comput_ap(gt, rank):
     old_recall = 0.0
@@ -54,27 +72,9 @@ class Oxford5k(Dataset):
         pathname = os.path.splitext(os.path.basename(path))
         return pathname[0]
 
-    def get_query(self, dir):
-        querys = []
-        q_v = {}
-        for i in range(len(self.query_list)):
-            for j in range(1, 6):
-                queryfile = os.path.join(dir, self.query_list[i] + '_' + str(j) + '_query.txt')
-                goodfile = os.path.join(dir, self.query_list[i] + '_' + str(j) + '_good.txt')
-                okfile = os.path.join(dir, self.query_list[i] + '_' + str(j) + '_ok.txt')
-                junkfile = os.path.join(dir, self.query_list[i] + '_' + str(j) + '_junk.txt')
-                query = load_query(queryfile)
-                good = load_list(goodfile)
-                ok = load_list(okfile)
-                junk = load_list(junkfile)
-                good.extend(ok) # good和ok都认为是好的查询
-                querys.append(query)
-                q_v[query] = [tuple(good), tuple(junk)] 
-        return tuple(querys), q_v
-
     def evaluate(self):
         features = torch.load(self.datapth)
-        querys, q_v = self.get_query(self.query_list, self.gtdir)
+        querys, q_v = get_query(self.query_list, self.gtdir)
         sum_ap = 0.0
         n = 0
         for i in range(len(features)):

@@ -23,11 +23,11 @@ def get_args():
     parser.add_argument('--ckp', type=str, default='mae_finetuned_vit_base.pth',
         help='checkpoint')
     
-    parser.add_argument('--extract', action='store_true', default=True,
-        help='extract feature')
+    parser.add_argument('--no_extract', action='store_true', default=False,
+        help='no extract feature')
 
-    parser.add_argument('--eval', action='store_true', default=True,
-        help='evaluate method')
+    parser.add_argument('--no_eval', action='store_true', default=False,
+        help='no evaluate method')
 
     args = parser.parse_args()
 
@@ -37,11 +37,11 @@ def main():
     args = get_args()
     
     d = dataset.create_dataset(args.dataset, args.datadir, args.datapth)
-    if args.extract:
+    if not args.no_extract:
         m = zoo.create_model(args.method, args.model, args.ckp)
         m.extract(d)
     
-    if args.eval:
+    if not args.no_eval:
         d.evaluate()
 
 if __name__ == '__main__':

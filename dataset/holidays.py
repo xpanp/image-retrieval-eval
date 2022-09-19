@@ -4,27 +4,54 @@ from pathlib import Path
 import torch
 import os
 
-# 计算单个查询的ap值
-def comput_ap(gt, rank):
-    print(gt)
-    old_recall = 0.0
-    old_precision = 1.0
-    ap = 0.0
+# 获取列表的第二个元素
+def take_second(elem):
+    return elem[1]
 
-    intersect_size = 0
-    j = 0
-
-    for r in rank:
-        if r[0] in gt:
-            intersect_size += 1
+def get_groundtruth(gtfile):
+    """ Read datafile holidays_images.dat and output a dictionary
+    mapping queries to the set of positive results (plus a list of all
+    images)"""
+    gt={}
+    allnames=set()
+    for line in open(gtfile,"r"):
+        imname=line.strip()
+        allnames.add(imname)
+        imno=int(imname[:-len(".jpg")])    
+        if imno%100==0:
+            gt_results=set()
+            gt[imname]=gt_results
+        else:
+            gt_results.add(imname)
         
-        recall = intersect_size / float(len(gt))
-        precision = intersect_size / (j + 1.0)
+    return allnames,gt
+    
+def score_ap_from_ranks_1(ranks, nres):
+    """ Compute the average precision of one search.
+    ranks = ordered list of ranks of true positives
+    nres  = total number of positives in dataset  
+    """
+    
+    # accumulate trapezoids in PR-plot
+    ap=0.0
 
-        ap += (recall-old_recall) * ((old_precision+precision)/2.0)
-        old_recall = recall
-        old_precision = precision
-        j += 1
+    # All have an x-size of:
+    recall_step=1.0/nres
+        
+    for ntp,rank in enumerate(ranks):
+        
+        # y-size on left side of trapezoid:
+        # ntp = nb of true positives so far
+        # rank = nb of retrieved items so far
+        if rank==0: precision_0=1.0
+        else:       precision_0=ntp/float(rank)
+
+        # y-size on right side of trapezoid:
+        # ntp and rank are increased by one
+        precision_1=(ntp+1)/float(rank+1)
+        
+        ap+=(precision_1+precision_0)*recall_step/2.0
+            
     return ap
 
 class Holidays(Dataset):
@@ -39,41 +66,45 @@ class Holidays(Dataset):
         # res = os.path.split(path)
         # return res[-1]
 
-    def get_query(self, gtfile):
-        querys = []
-        q_v = {}
-        with open(gtfile, 'r') as f:
-            list = f.readlines()
-            for it in list:
-                it = it.strip('\n')
-                qs = it.split(' ')
-                if len(qs) < 7:
-                    querys.append(qs[0])
-                    q_v[qs[0]] = qs
-        return querys, q_v
-
     def evaluate(self):
         features = torch.load(self.datapth)
-        querys, q_v = self.get_query(self.gtfile)
-        sum_ap = 0.0
+        _, gt = get_groundtruth(self.gtfile)
+        sum_ap = 0.
         n = 0
         for i in range(len(features)):
-            if features[i][0] in querys:
-                n += 1
-                results = []
-                for j in range(len(features)):
-                    score = torch.cosine_similarity(features[i][1], features[j][1], dim=1)
-                    results.append(score)
-                res_tensor = torch.tensor(results)
-                _, index = torch.topk(res_tensor, len(results))
-                ranked_list = []
-                for t in index:
-                    ranked_list.append([features[t][0], results[t]])
-                ap = comput_ap(q_v[features[i][0]], ranked_list)
-                print(n, "/", len(querys), ", query:", features[i][0], ", ap:", ap)
-                sum_ap += ap
+            # print(features[i][1].shape)
+            imname = features[i][0]
+            imno = int(imname[:-len(".jpg")])
+            # 可以整除100的，为查询图像
+            if imno % 100 != 0:
+                print(i, "/", len(features), ", jpg:", features[i][0], "-------skip")
+                continue
+            
+            print(i, "/", len(features), ", jpg:", features[i][0])
 
-        print("mAP: %.5f" % (sum_ap/len(querys)))
+            # 获取所有相似度
+            results = []
+            for j in range(len(features)):
+                score = torch.cosine_similarity(features[i][1], features[j][1], dim=1)
+                results.append((features[j][0], score))
+            results.sort(key=take_second, reverse=True)
+
+            gt_results=gt.pop(features[i][0])
+            tp_ranks=[]
+            print_res=[]
+            for j in range(len(results)):
+                if results[j][0] in gt_results:
+                    tp_ranks.append(j - 1)
+                    print_res.append((j, results[j][0], results[j][1]))
+            print(i, "/", len(features), ", jpg:", features[i][0], ", res:", print_res)
+
+            sum_ap += score_ap_from_ranks_1(tp_ranks, len(gt_results))
+            n+=1
+        
+        if gt:
+            print("---------no result for queries", gt.keys())
+
+        print("mAP: %.5f" % (sum_ap/n))
 
 @register_dataset
 def holidays(datadir, datapth):

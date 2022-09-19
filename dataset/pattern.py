@@ -4,6 +4,19 @@ from pathlib import Path
 import torch
 import os
 
+def get_query(gtfile):
+    querys = []
+    q_v = {}
+    with open(gtfile, 'r') as f:
+        list = f.readlines()
+        for it in list:
+            it = it.strip('\n')
+            qs = it.split(' ')
+            if len(qs) < 7:
+                querys.append(qs[0])
+                q_v[qs[0]] = qs
+    return querys, q_v
+
 # 计算单个查询的ap值
 def comput_ap(gt, rank):
     print(gt)
@@ -38,22 +51,9 @@ class Pattern(Dataset):
         name = Path(path).name
         return name
 
-    def get_query(self, gtfile):
-        querys = []
-        q_v = {}
-        with open(gtfile, 'r') as f:
-            list = f.readlines()
-            for it in list:
-                it = it.strip('\n')
-                qs = it.split(' ')
-                if len(qs) < 7:
-                    querys.append(qs[0])
-                    q_v[qs[0]] = qs
-        return querys, q_v
-
     def evaluate(self):
         features = torch.load(self.datapth)
-        querys, q_v = self.get_query(self.gtfile)
+        querys, q_v = get_query(self.gtfile)
         sum_ap = 0.0
         n = 0
         for i in range(len(features)):

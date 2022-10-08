@@ -15,10 +15,10 @@ def get_args():
         help='dataset feature pth')
 
     parser.add_argument('--method', type=str, default='mae',
-        help='vit/mae/swin/vgg/resnet')
+        help='vit/mae/vgg/resnet/swin')
 
     parser.add_argument('--model', type=str, default='mae_vit_base_patch16',
-        help='model name, such as mae_vit_base_patch16/vit_base_patch16_224')
+        help='model name, such as vit_base_patch16_224/mae_vit_base_patch16/vgg16/tv_resnet50/swin_base_patch4_window7_224')
 
     parser.add_argument('--ckp', type=str, default='mae_finetuned_vit_base.pth',
         help='checkpoint')

@@ -22,7 +22,19 @@ def get_args():
 
     parser.add_argument('--ckp', type=str, default='mae_finetuned_vit_base.pth',
         help='checkpoint')
+
+    parser.add_argument('--width', type=int, default=224,
+        help='net input width size')
+
+    parser.add_argument('--height', type=int, default=224,
+        help='net input height size')
+
+    parser.add_argument('--avg_size', type=int, default=7,
+        help='network feature map output size, it is for cnn')
     
+    parser.add_argument('--cls', type=bool, default=True,
+        help='use cls as feature, it is for vit')
+
     parser.add_argument('--no_extract', action='store_true', default=False,
         help='no extract feature')
 
@@ -38,7 +50,7 @@ def main():
     
     d = dataset.create_dataset(args.dataset, args.datadir, args.datapth)
     if not args.no_extract:
-        m = zoo.create_model(args.method, args.model, args.ckp)
+        m = zoo.create_model(args, args.method, args.model, args.ckp)
         m.extract(d)
     
     if not args.no_eval:

@@ -7,11 +7,11 @@ def l2n(x, eps=1e-6):
     return x / (torch.norm(x, p=2, dim=1, keepdim=True) + eps).expand_as(x)
 
 class Model(ABC):
-    def __init__(self, model, ckp):
+    def __init__(self, args, model, ckp):
         # 应当根据数据集特性设置transforms
         self.transform = transforms.Compose([
             transforms.Resize(size=248, interpolation=Image.BICUBIC),
-            transforms.CenterCrop(size=(224, 224)),
+            transforms.CenterCrop(size=(args.width, args.height)),
             transforms.ToTensor(),
             # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             transforms.Normalize(mean=[0.5000, 0.5000, 0.5000], std=[0.5000, 0.5000, 0.5000])

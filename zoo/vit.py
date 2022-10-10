@@ -10,8 +10,8 @@ class ViT(Model):
         print("torch version:", torch.__version__)
         print("timm version:", timm.__version__)
         self.model = self.get_model(model, ckp)
-        self.use_cls = args.cls
-        print("use_cls:", self.use_cls)
+        self.use_avg = args.avg
+        print("use_avg:", self.use_avg)
         print(model)
         print(self.transform)
 
@@ -21,7 +21,7 @@ class ViT(Model):
     def postprocessing(self, feature):
         if timm.__version__ >= '0.6.5':
             # cls [batch, 197, 768] -> [batch, 768]
-            if self.use_cls:
+            if not self.use_avg:
                 feature = feature[:, 0]
             else:
                 feature = feature.transpose(1, 2)

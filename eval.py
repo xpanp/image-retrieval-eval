@@ -32,8 +32,8 @@ def get_args():
     parser.add_argument('--avg_size', type=int, default=7,
         help='network feature map output size, it is for cnn')
     
-    parser.add_argument('--cls', type=bool, default=True,
-        help='use cls as feature, it is for vit')
+    parser.add_argument('--avg', action='store_true', default=False,
+        help='use avg as feature, it is for vit')
 
     parser.add_argument('--no_extract', action='store_true', default=False,
         help='no extract feature')

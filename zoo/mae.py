@@ -11,8 +11,8 @@ class MAE(Model):
         print("torch version:", torch.__version__)
         print("timm version:", timm.__version__)
         self.model = self.get_model(model, ckp)
-        self.use_cls = args.cls
-        print("use_cls:", self.use_cls)
+        self.use_avg = args.avg
+        print("use_avg:", self.use_avg)
         print(model)
         print(self.transform)
 
@@ -25,7 +25,7 @@ class MAE(Model):
         return model
 
     def postprocessing(self, feature):
-        if self.use_cls:
+        if not self.use_avg:
             feature = feature[:, 0]
         else:
             feature = feature.transpose(1, 2)

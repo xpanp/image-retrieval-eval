@@ -2,6 +2,7 @@ from .vit import *
 from .vgg import *
 from .model import *
 from .mae import *
+from .fusion import *
 from .swin import *
 from .resnet import *
 from .factory import create_model

@@ -14,8 +14,8 @@ def get_args():
     parser.add_argument('--datapth', type=str, default='pattern.pth',
         help='dataset feature pth')
 
-    parser.add_argument('--method', type=str, default='mae',
-        help='vit/mae/vgg/resnet/swin')
+    parser.add_argument('--method', type=str, default='fusion',
+        help='vit/mae/vgg/resnet/swin/fusion')
 
     parser.add_argument('--model', type=str, default='mae_vit_base_patch16',
         help='model name, such as vit_base_patch16_224/mae_vit_base_patch16/vgg16/tv_resnet50/swin_base_patch4_window7_224')
